@@ -1,135 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>实时新闻</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
-            min-height: 100vh;
-            padding: 40px;
-        }
-        .
-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e94560;
-        }
-        .header h1 {
-            font-size: 48px;
-            color: #e94560;
-            margin-bottom: 10px;
-        }
-        .header .time {
-            font-size: 24px;
-            color: #888;
-        }
-        .news-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .news-item {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 25px 30px;
-            margin-bottom: 20px;
-            border-left: 4px solid #e94560;
-        }
-        .news-title {
-            font-size: 32px;
-            margin-bottom: 12px;
-            line-height: 1.4;
-}
-        .news-meta {
-            font-size: 18px;
-            color: #888;
-        }
-        .news-source {
-            color: #e94560;
-            margin-right: 20px;
-        }
-        .loading {
-            text-align: center;
-            font-size: 36px;
-            padding: 100px;
-            color: #888;
-        }
-        .update-time {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: rgba(0,0,0,0.5);
-            color: #888;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>实时新闻</title>
+<style>
+body{font-family:"Microsoft YaHei";background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:40px;margin:0}
+h1{color:#e94560;text-align:center;font-size:48px}
+.time{text-align:center;color:#888;font-size:24px;margin-bottom:40px}
+.news-item{background:rgba(255,255,255,0.05);border-radius:10px;padding:25px 30px;margin-bottom:20px;border-left:4px solid #e94560}
+.news-title{font-size:32px;margin-bottom:12px}
+.news-meta{font-size:18px;color:#888}
+.news-source{color:#e94560;margin-right:20px}
+.loading{text-align:center;font-size:36px;padding:100px;color:#888}
+.update{position:fixed;bottom:20px;right:20px;background:rgba(0,0,0,0.5);padding:10px 20px;border-radius:8px;color:#888}
+</style>
 </head>
 <body>
-    
-        
-
-📰 实时新闻
-
-
-        
-加载中...
-
-    
-
-
-
-<div class="news-container" id="newsContainer">
-🔄 正在加载新闻...
-
-    
-
-
-
-<div class="update-time" id="updateTime">更新时间：--</div>
-
+<h1>📰 实时新闻</h1>
+<div class="time" id="time"></div>
+<div id="news"><div class="loading">🔄 加载中...</div></div>
+<div class="update" id="update"></div>
 <script>
-    function updateTime() {
-        const now = new Date();
-        document.getElementById('currentTime').textContent = now.toLocaleString('zh-CN');
-    }
-
-    async function loadNews() {
-        try {
-            const response = await fetch('news.json?t=' + Date.now());
-            const data = await response.json();
-            
-            let html = '';
-            data.news.forEach(item => {
-                html += `
-                    <div class="news-item">
-                        <div class="news-title">${item.title}</div>
-                        <div class="news-meta">
-${item.source}
-                                ${item.time}
-                        
-                    `;
-                });
-                document.getElementById('newsContainer').innerHTML = html;
-                document.getElementById('updateTime').textContent = '更新时间：' + data.updateTime;
-            } catch (error) {
-                document.getElementById('newsContainer').innerHTML = 
-                    '
-⚠️ 加载失败，请稍后刷新
-';
-            }
-            updateTime();
-        }
-
-    setInterval(loadNews, 600000);
-    loadNews();
+document.getElementById('time').textContent=new Date().toLocaleString('zh-CN');
+fetch('news.json?t='+Date.now()).then(r=>r.json()).then(d=>{
+let h='';d.news.forEach(n=>{h+='<div class="news-item"><div class="news-title">'+n.title+'</div><div class="news-meta"><span class="news-source">'+n.source+'</span><span>'+n.time+'</span></div></div>'});
+document.getElementById('news').innerHTML=h;
+document.getElementById('update').textContent='更新时间：'+d.updateTime;
+}).catch(e=>{document.getElementById('news').innerHTML='<div class="loading">⚠️ 加载失败</div>';});
 </script>
-
 </body>
+
 </html>
