@@ -21,13 +21,42 @@ h1{color:#e94560;text-align:center;font-size:48px}
 <div id="news"><div class="loading">🔄 加载中...</div></div>
 <div class="update" id="update"></div>
 <script>
+// ⚠️ 填你的天行数据 API Key
+const API_KEY='0c91863211557aa1efea0cec5d111e5f';
+
 document.getElementById('time').textContent=new Date().toLocaleString('zh-CN');
-fetch('news.json?t='+Date.now()).then(r=>r.json()).then(d=>{
-let h='';d.news.forEach(n=>{h+='<div class="news-item"><div class="news-title">'+n.title+'</div><div class="news-meta"><span class="news-source">'+n.source+'</span><span>'+n.time+'</span></div></div>'});
+
+fetch('http://api.tianapi.com/general/index?key='+API_KEY+'&num=10')
+.then(r=>r.json())
+.then(d=>{
+if(d.code===200){
+let h='';
+d.newslist.forEach(n=>{
+h+='<div class="news-item"><div class="news-title">'+n.title+'</div><div class="news-meta"><span class="news-source">'+(n.source||'未知')+'</span><span>'+formatTime(n.ctime)+'</span></div></div>'
+});
 document.getElementById('news').innerHTML=h;
-document.getElementById('update').textContent='更新时间：'+d.updateTime;
-}).catch(e=>{document.getElementById('news').innerHTML='<div class="loading">⚠️ 加载失败</div>';});
+document.getElementById('update').textContent='更新时间：'+new Date().toLocaleString('zh-CN');
+}else{
+document.getElementById('news').innerHTML='<div class="loading">⚠️ '+d.msg+'</div>';
+}
+})
+.catch(e=>{
+document.getElementById('news').innerHTML='<div class="loading">⚠️ 网络错误</div>';
+});
+
+function formatTime(t){
+try{
+const d=new Date(t),n=new Date(),m=(n-d)/1000/60;
+if(m<1)return'刚刚';
+if(m<60)return Math.floor(m)+'分钟前';
+if(m<1440)return Math.floor(m/60)+'小时前';
+return Math.floor(m/1440)+'天前';
+}catch{return'未知时间';}
+}
+
+// 每 10 分钟自动刷新
+setInterval(()=>location.reload(),600000);
 </script>
 </body>
-
 </html>
+```
