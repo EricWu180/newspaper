@@ -24,7 +24,8 @@
             color: #e94560;
             margin-bottom: 10px;
         }
-        .header .time {
+        .
+header .time {
             font-size: 24px;
             color: #888;
         }
@@ -36,8 +37,7 @@
             background: rgba(255,255,255,0.05);
             border-radius: 10px;
             padding: 25px 30px;
-            margin-bottom:
-20px;
+            margin-bottom: 20px;
             border-left: 4px solid #e94560;
         }
         .news-title {
@@ -57,7 +57,7 @@
             text-align: center;
             font-size: 36px;
             padding: 100px;
-            color: #888;
+color: #888;
         }
         .update-time {
             position: fixed;
@@ -69,62 +69,129 @@
             border-radius: 8px;
             font-size: 16px;
         }
+        .refresh-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 30px;
+            background: #e94560;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .refresh-btn:hover {
+            background: #ff6b6b;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📰 实时新闻</h1>
-        <div class="time" id="currentTime">加载中...</div>
-    </div>
-    
-    <div class="news-container" id="newsContainer">
-        <div class="loading">🔄 正在加载新闻...</div>
-    </div>
-    
-    <div class="update-time" id="updateTime">更新时间：加载中...</div>
+    <button class="refresh-btn" onclick="loadNews()">🔄 刷新</button>
 
-    <script>
-        function updateTime() {
-            const now = new Date();
+
+
+<div
+class="header">
+📰 实时新闻
+
+
+        
+加载中...
+
+    
+
+
+
+<div class="news-container" id="newsContainer">
+    <div class="loading">🔄 正在加载新闻...</div>
+</div>
+
+<div class="update-time" id="updateTime">更新时间：--</div>
+
+<script>
+    // ⚠️ 替换成你的天行数据 API Key
+    const API_KEY = '0c91863211557aa1efea0cec5d111e5f';
+    
+    // 自动刷新间隔（毫秒）
+    const REFRESH_INTERVAL = 600000; // 10 分钟
+
+    // 更新时间
+    function updateTime() {
+        const now = new Date();
         const timeStr = now.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            document.getElementById('currentTime').textContent = timeStr;
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        document.getElementById('currentTime').textContent =
+timeStr;
         }
 
-        async function loadNews() {
-            try {
-const response = await fetch('/newspaper/news.json?t=' + Date.now());
-                const news = await response.json();
-                
+
+
+    // 格式化时间
+    function formatTime(timeStr) {
+        try {
+            const date = new Date(timeStr);
+            const now = new Date();
+            const diff = (now - date) / 1000 / 60;
+            if (diff < 1) return '刚刚';
+            if (diff < 60) return Math.floor(diff) + '分钟前';
+            if (diff < 1440) return Math.floor(diff / 60) + '小时前';
+            return Math.floor(diff / 1440) + '天前';
+        } catch {
+            return '未知时间';
+        }
+    }
+
+    // 加载新闻
+    async function loadNews() {
+        const container = document.getElementById('newsContainer');
+        container.innerHTML = '<div class="loading">🔄 正在加载新闻...</div>';
+        
+        try {
+            const response
+= await fetch(http://api.tianapi.com/general/index?key=${API_KEY}&num=10);
+                const data = await response.json();
+
+
+
+            if (data.code === 200) {
                 let html = '';
-                news.forEach(item => {
+                data.newslist.forEach(item => {
                     html += `
                         <div class="news-item">
                             <div class="news-title">${item.title}</div>
                             <div class="news-meta">
-                                <span class="news-source">${item.source}</span>
-                                <span>${item.time}</span>
+                                <span class="news-source">${item.source || '未知'}</span>
+                                <span>${formatTime(item.ctime)}</span>
                             </div>
                         </div>
                     `;
                 });
-                document.getElementById('newsContainer').innerHTML = html;
-                document.getElementById('updateTime').textContent = '更新时间：' + n
-ews.updateTime;
+container.innerHTML = html;
+                    document.getElementById('updateTime').textContent = '更新时间：' + new Date().toLocaleString('zh-CN');
+                } else {
+                    container.innerHTML = <div class="loading">⚠️ ${data.msg || '加载失败'}</div>;
+                }
             } catch (error) {
-                document.getElementById('newsContainer').innerHTML = 
-                    '<div class="loading">⚠️ 加载失败，请稍后刷新</div>';
+                container.innerHTML = '
+⚠️ 网络错误，请检查 API Key 或网络连接
+';
             }
             updateTime();
         }
 
-        setInterval(loadNews, 600000);
-        loadNews();
-    </script>
+    // 自动刷新
+    setInterval(loadNews, REFRESH_INTERVAL);
+
+    // 页面加载时获取新闻
+    loadNews();
+</script>
+
 </body>
 </html>
+
