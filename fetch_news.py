@@ -1,40 +1,36 @@
 import json
 import requests
 from datetime import datetime
-import xml.etree.ElementTree as ET
 
-RSS_FEEDS = [
-    {'name': '新华网', 'url': 'http://www.news.cn/rss/news.xml'},
-    {'name': '中国网', 'url': 'http://www.china.com.cn/rss/today.xml'},
-]
+# ⚠️ 替换成你的 API Key
+API_KEY = '0c91863211557aa1efea0cec5d111e5f'
 
-def fetch_rss(url, timeout=10):
+def fetch_news():
     try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers, timeout=timeout)
-        response.raise_for_status()
-        response.encoding = 'utf-8'
-        root = ET.fromstring(response.content)
-        items = []
-        for item in root.findall('.
-//item'):
-            title = item.find('title')
-            if title is not None and title.text:
-                items.append({
-                    'title': title.text,
-                    'pubDate': item.find('pubDate').text if item.find('pubDate') is not None else ''
+        url = f'http://api.tianapi.com/general/index?key={API_KEY}&num=10'
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        
+        if data['code'] == 200:
+            news = []
+            for item in data['newslist'][:10]\:
+                news.append({
+                    'title': item['title'],
+                    'source': item['source'] or '未知',
+                    'time': format_time(item['ctime'])
                 })
-        return items[:3]
+            return news
+        else:
+            print(f"API 错误：{data.get('msg', '未知错误')}")
+            return []
     except Exception as e:
-        print(f"抓取失败 {url}: {e}")
+        print(f"API 抓取失败：{e}")
         return []
 
-def format_time(date_str):
-    if not date_str:
-        return '刚刚'
+def format_time(time_str):
     try:
-        date = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S %z')
-        now = datetime.now(date.tzinfo)
+        date = datetime.strptime(time_str, '%Y-%m-%d %H:%M')
+        now = datetime.now()
         diff = (now - date).total_seconds() / 60
         if diff < 1:
             return '刚刚'
@@ -42,43 +38,25 @@ def format_time(date_str):
             return f'{int(diff)}分钟前'
         elif diff < 1440:
             return f'{int(diff/60)}小时前'
-else:
+        else:
             return f'{int(diff/1440)}天前'
     except:
         return '未知时间'
 
 def main():
-    all_news = []
-    for feed in RSS_FEEDS:
-        items = fetch_rss(feed['url'])
-        for item in items:
-            all_news.append({
-                'title': f"【{feed['name']}】{item['title']}",
-                'source': feed['name'],
-                'time': format_time(item['pubDate'])
-            })
-
-
-
-# 如果没抓到新闻，用备用数据
-if not all_news:
-    all_news = [
-        {'title': '【新华网】欢迎使用新闻服务', 'source': '新华网', 'time': '刚刚'},
-        {'title': '【中国网】系统正在初始化', 'source': '中国网', 'time': '刚刚'},
-    ]
-
-news_data = {
-    'updateTime': datetime.now().strftime('%Y-%m-%d %H:%M'),
-    'news': all_news[:10]
-}
-
-with open('news.json', 'w', encoding='utf-8')
-as f:
+    news = fetch_news()
+    if not news:
+        news = [{'title': '【系统】新闻加载失败，请检查 API Key', 'source': '系统', 'time': '刚刚'}]
+    
+    news_data = {
+        'updateTime': datetime.now().strftime('%Y-%m-%d %H:%M'),
+        'news': news
+    }
+    
+    with open('news.json', 'w', encoding='utf-8') as f:
         json.dump(news_data, f, ensure_ascii=False, indent=2)
+    
+    print(f"✅ 已更新 {len(news)} 条新闻")
 
-
-
-print(f"✅ 已更新 {len(news_data['news'])} 条新闻")
-
-if name == 'main':
+if __name__ == '__main__':
     main()
