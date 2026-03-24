@@ -13,7 +13,7 @@ def fetch_news():
         
         if data['code'] == 200:
             news = []
-            for item in data['newslist'][:10]\:
+            for item in data['newslist'][:10]:
                 news.append({
                     'title': item['title'],
                     'source': item['source'] or '未知',
